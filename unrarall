@@ -456,6 +456,18 @@ for file in $(find "$DIR" -iregex '.*\.\(rar\|001\)$'); do
   # Strip extension off filename
   sfilename="${filename%.*}"
 
+  message info "Base filename: $filename"
+
+  #Check if an extract-file exists
+  message info "Checking for already extracted info file (.extracted)"
+  if [ ! -f "$file.extracted" ]; then
+    message info "No .extracted file found!"
+ 
+  else
+    message info "FOUND .extracted file. Skipping this one then"
+    continue 
+ fi
+
   # if rar is of style partxx.rar then only extract $filename.part01.rar
   if [[ "$file" =~ .part[0-9]+.rar$ ]]; then
     if [[ "$file" =~ .part0*1.rar$ ]]; then
@@ -509,8 +521,13 @@ for file in $(find "$DIR" -iregex '.*\.\(rar\|001\)$'); do
   # if fail remove from count
   if [ "$SUCCESS" -eq 0 ] && [ "$FORCE" -eq 0 ] ; then
     message ok "ok";
+
+    #Now add the .extracted file to let know it has been done
+    message info "Making .extracted file"
+    touch "$filename.extracted" 
   elif [ "$SUCCESS" -eq 0 ] && [ "$FORCE" -eq 1 ] ; then
     message ok "ok (forced)";
+    touch "$filename.extracted"
   else
     let COUNT=COUNT-1
     [ "$FORCE" -eq 0 ] && message error "failed" || message error "failed (forced)"
